@@ -1,7 +1,7 @@
 {
   "name": "reactticker",
   "version": "1.0.0",
-  "description": "",
+  "description": "Stock quote ticker using react",
   "main": "ticker.min.js",
   "scripts": {
     "build": "webpack",
@@ -11,16 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1"
+  },
+  "devDependencies": {
     "babel-core": "^6.13.2",
     "babel-loader": "^6.2.5",
     "babel-preset-es2015": "^6.13.2",
     "babel-preset-react": "^6.11.1",
-    "react": "^15.3.1",
-    "react-dom": "^15.3.1",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.15.0"
-  },
-  "devDependencies": {
-
   }
 }
