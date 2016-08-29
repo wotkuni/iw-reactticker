@@ -5,13 +5,14 @@
   "main": "ticker.min.js",
   "scripts": {
     "build": "webpack",
-    "start": "node_modules/.bin/webpack-dev-server --progress --inline",
+    "start": "webpack-dev-server --progress --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "react": "^15.3.1",
+    "react-bootstrap": "^0.30.3",
     "react-dom": "^15.3.1"
   },
   "devDependencies": {

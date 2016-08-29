@@ -1,29 +1,34 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Button } from 'react-bootstrap';
 
 class SymbolForm extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
       symbol: ''
-    }
+    };
+
+    this.onSymbolChange = this.onSymbolChange.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSymbolChange (e) {
     this.setState({symbol: e.target.value});
   }
 
-  onSubmit () {
+  onSubmit (e) {
+    e.preventDefault();
     this.props.onFormSubmit(this.state.symbol);
   }
 
   render () {
     return (
-        <form>
+        <form onSubmit={this.onSubmit}>
           <label htmlFor="symbol">Symbol:</label>
-          <input type="text" id="symbol" />
+          <input type="text" id="symbol" onChange={this.onSymbolChange}/>
 
-          <button type="submit">add</button>
+          <Button bsStyle="primary" type="submit">Add</Button>
         </form>
     )
   }
@@ -32,12 +37,17 @@ class SymbolForm extends React.Component {
 class Ticker extends React.Component {
   constructor (props, context) {
     super(props, context);
+
     this.state = {
       symbols: [],
       quotes: []
     };
 
+    this.defaultSymbols = ['AAPL', 'GOOG', 'SPY'];
+
+    this.deleteSymbol = this.deleteSymbol.bind(this);
   }
+
   getQuoteData () {
     let request = new XMLHttpRequest();
     let url = 'https://www.google.com/finance/info?client=ig&q=' + this.state.symbols.join(',');
@@ -64,11 +74,24 @@ class Ticker extends React.Component {
     let symbols = this.state.symbols;
     symbols.push(symbol);
     this.setState({symbols: symbols});
+    localStorage.symbols = symbols.join(',');
     this.getQuoteData();
   }
 
+  deleteSymbol (row) {
+
+  }
+
   componentWillMount () {
-    this.setState({symbols: ['AAPL', 'GOOG', 'SPY']});
+    let symbols = this.defaultSymbols;
+
+    if(localStorage.getItem('symbols')) {
+      symbols = localStorage.getItem('symbols').split(',');
+    } else {
+      localStorage.setItem('symbols', symbols);
+    }
+
+    this.setState({symbols: symbols});
   }
 
   componentDidMount () {
@@ -81,6 +104,7 @@ class Ticker extends React.Component {
         <tr key={index}>
           <td>{quote.t}</td>
           <td>{quote.l}</td>
+          <td className="remove">delete</td>
         </tr>
       )
     };
@@ -88,12 +112,19 @@ class Ticker extends React.Component {
     return (
       <div>
         <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Last</th>
+              <th></th>
+            </tr>
+          </thead>
           <tbody>
             { this.state.quotes.map(renderRow) }
           </tbody>
         </table>
 
-        <SymbolForm onFormSubmit={this.addSymbol} />
+        <SymbolForm onFormSubmit={this.addSymbol.bind(this)} />
       </div>
     )
   }
