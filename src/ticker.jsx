@@ -44,8 +44,6 @@ class Ticker extends React.Component {
     };
 
     this.defaultSymbols = ['AAPL', 'GOOG', 'SPY'];
-
-    this.deleteSymbol = this.deleteSymbol.bind(this);
   }
 
   getQuoteData () {
@@ -78,7 +76,8 @@ class Ticker extends React.Component {
     this.getQuoteData();
   }
 
-  deleteSymbol (row) {
+  deleteSymbol (symbol) {
+    console.log('deleting ', symbol);
 
   }
 
@@ -96,6 +95,8 @@ class Ticker extends React.Component {
 
   componentDidMount () {
     this.getQuoteData();
+
+    window.setInterval(this.getQuoteData.bind(this), 5000);
   }
 
   render () {
@@ -104,7 +105,7 @@ class Ticker extends React.Component {
         <tr key={index}>
           <td>{quote.t}</td>
           <td>{quote.l}</td>
-          <td className="remove">delete</td>
+          <td className="remove"><a href="#" onClick={this.deleteSymbol.bind(this, quote.t)}>delete</a></td>
         </tr>
       )
     };
@@ -123,6 +124,8 @@ class Ticker extends React.Component {
             { this.state.quotes.map(renderRow) }
           </tbody>
         </table>
+
+        <p>Last updated {Date.now()}</p>
 
         <SymbolForm onFormSubmit={this.addSymbol.bind(this)} />
       </div>
