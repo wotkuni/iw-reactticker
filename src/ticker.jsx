@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Button } from 'react-bootstrap';
+import { Grid, Row, Col, Button, Table } from 'react-bootstrap';
+
+const DEFAULT_SYMBOLS = ['AAPL', 'GOOG', 'SPY'];
 
 class SymbolForm extends React.Component {
   constructor (props) {
@@ -34,16 +36,37 @@ class SymbolForm extends React.Component {
   }
 }
 
+class TickerTable extends React.Component {
+    constructor (props) {
+      super(props);
+    }
+
+    render () {
+      return (
+        <Table bordered>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Last</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            { this.props.rows }
+          </tbody>
+        </Table>
+      )
+    }
+}
+
 class Ticker extends React.Component {
-  constructor (props, context) {
-    super(props, context);
+  constructor (props) {
+    super(props);
 
     this.state = {
       symbols: [],
       quotes: []
     };
-
-    this.defaultSymbols = ['AAPL', 'GOOG', 'SPY'];
   }
 
   getQuoteData () {
@@ -71,18 +94,24 @@ class Ticker extends React.Component {
   addSymbol (symbol) {
     let symbols = this.state.symbols;
     symbols.push(symbol);
-    this.setState({symbols: symbols});
-    localStorage.symbols = symbols.join(',');
+    this.setSymbols(symbols);
+
     this.getQuoteData();
   }
 
   deleteSymbol (symbol) {
-    console.log('deleting ', symbol);
+    let symbols = this.state.symbols;
+    symbols.splice(symbols.lastIndexOf(symbol), 1);
+    this.setSymbols(symbols);
+  }
 
+  setSymbols(symbolArr) {
+    this.setState({symbols: symbolArr});
+    localStorage.symbols = symbolArr.join(',');
   }
 
   componentWillMount () {
-    let symbols = this.defaultSymbols;
+    let symbols = DEFAULT_SYMBOLS;
 
     if(localStorage.getItem('symbols')) {
       symbols = localStorage.getItem('symbols').split(',');
@@ -100,6 +129,8 @@ class Ticker extends React.Component {
   }
 
   render () {
+    let timestamp = new Date();
+
     let renderRow = (quote, index) => {
       return (
         <tr key={index}>
@@ -111,26 +142,22 @@ class Ticker extends React.Component {
     };
 
     return (
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Last</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            { this.state.quotes.map(renderRow) }
-          </tbody>
-        </table>
+      <Grid>
+        <Row>
+          <Col md={6} mdOffset={3} xs={12}>
+            <TickerTable rows={this.state.quotes.map(renderRow)} />
+            <p>Last updated {timestamp.toLocaleString()}</p>
+          </Col>
+        </Row>
 
-        <p>Last updated {Date.now()}</p>
-
-        <SymbolForm onFormSubmit={this.addSymbol.bind(this)} />
-      </div>
+        <Row>
+          <Col md={6} mdOffset={3} xs={12}>
+            <SymbolForm onFormSubmit={this.addSymbol.bind(this)} />
+          </Col>
+        </Row>
+      </Grid>
     )
   }
 }
 
-ReactDOM.render(<Ticker />, document.getElementById('ticker'));
+export default Ticker;

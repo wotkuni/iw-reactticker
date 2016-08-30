@@ -1,13 +1,9 @@
 const path = require('path');
+const src = path.join(__dirname, 'src/');
 const webpack = require('webpack');
 
 module.exports = {
-  entry: './src/ticker.jsx',
-  // entry: [
-  //   'webpack-dev-server/client?http://localhost:3000',
-  //   'webpack/hot/only-dev-server',
-  //   './src/ticker.jsx'
-  // ],
+  entry: './src/app.jsx',
   output: {
     path: './dist',
     filename: 'ticker.min.js'
@@ -22,10 +18,7 @@ module.exports = {
         test: /\.jsx$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
-        include: path.join(__dirname, 'src')
-        // query: {
-        //   presets: ['es2015', 'react']
-        // }
+        include: src
       }
     ]
   },
