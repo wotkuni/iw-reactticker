@@ -1,3 +1,5 @@
+'use strict';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Grid, Row, Col, Button, Table } from 'react-bootstrap';
@@ -59,6 +61,11 @@ class TickerTable extends React.Component {
     }
 }
 
+let quoteData = new Promise(
+  function(resolve, reject) {
+
+  }
+)
 class Ticker extends React.Component {
   constructor (props) {
     super(props);
