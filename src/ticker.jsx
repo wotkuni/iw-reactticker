@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Grid, Row, Col, Button, Table } from 'react-bootstrap';
+import { getLiveData, getHistoricalData } from './data.js'
 
 const DEFAULT_SYMBOLS = ['AAPL', 'GOOG', 'SPY'];
 
@@ -39,66 +40,83 @@ class SymbolForm extends React.Component {
 }
 
 class TickerTable extends React.Component {
-    constructor (props) {
-      super(props);
-    }
+  constructor(props) {
+    super(props);
+  }
 
-    render () {
-      return (
-        <Table bordered>
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Last</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            { this.props.rows }
-          </tbody>
-        </Table>
-      )
-    }
+  render() {
+    return (
+      <Table bordered>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Last</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          { this.props.rows }
+        </tbody>
+      </Table>
+    )
+  }
 }
 
-let quoteData = new Promise(
-  function(resolve, reject) {
+class HistoricalData extends React.Component {
+  constructor (props) {
+    super(props);
 
+    this.state = {
+      data: []
+    }
   }
-)
+
+  getData() {
+    getHistoricalData(this.props.symbol)
+      .then((data) => {
+        this.setState({data: data});
+      })
+      .catch((err) => console.log('error: ' + err.message));
+  }
+
+  componentDidMount() {
+    this.getData();
+  }
+
+  render() {
+    return (
+      <Table bordered>
+        <thead>
+          <tr><th>Date</th><th>Price</th><th>Vol</th></tr>
+          {this.state.data.map((d, i) => {
+            return <tr key={i}><td>{d.date}</td><td>{d.price}</td><td>{d.volume}</td></tr>
+          })}
+        </thead>
+      </Table>
+    )
+  }
+}
+
 class Ticker extends React.Component {
   constructor (props) {
     super(props);
 
     this.state = {
       symbols: [],
-      quotes: []
+      quotes: [],
+      historical: []
     };
   }
 
-  getQuoteData () {
-    let request = new XMLHttpRequest();
-    let url = 'https://www.google.com/finance/info?client=ig&q=' + this.state.symbols.join(',');
-
-    let parseData = (request) => {
-      if (request.status >= 200 && request.status < 400) {
-        let data = request.responseText.replace(/\//g, '');
-        this.setState({quotes: JSON.parse(data)});
-      }
-    };
-
-    request.open('GET', url, true);
-
-    request.onload = parseData.bind(this, request);
-
-    request.onerror = function() {
-      // There was a connection error of some sort
-    };
-
-    request.send();
+  getQuoteData() {
+    getLiveData(this.state.symbols)
+      .then((data) => {
+        this.setState(data);
+      })
+      .catch((err) => console.log('error: ' + err.message));
   }
 
-  addSymbol (symbol) {
+  addSymbol(symbol) {
     let symbols = this.state.symbols;
     symbols.push(symbol);
     this.setSymbols(symbols);
@@ -106,7 +124,7 @@ class Ticker extends React.Component {
     this.getQuoteData();
   }
 
-  deleteSymbol (symbol) {
+  deleteSymbol(symbol) {
     let symbols = this.state.symbols;
     symbols.splice(symbols.lastIndexOf(symbol), 1);
     this.setSymbols(symbols);
@@ -117,7 +135,15 @@ class Ticker extends React.Component {
     localStorage.symbols = symbolArr.join(',');
   }
 
-  componentWillMount () {
+  showHistorical(symbol) {
+    let his = this.state.historical;
+    if(!his.includes(symbol)) {
+      his.push(symbol);
+      this.setState({historical: his});
+    }
+  }
+
+  componentWillMount() {
     let symbols = DEFAULT_SYMBOLS;
 
     if(localStorage.getItem('symbols')) {
@@ -129,21 +155,30 @@ class Ticker extends React.Component {
     this.setState({symbols: symbols});
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.getQuoteData();
 
     window.setInterval(this.getQuoteData.bind(this), 5000);
   }
 
-  render () {
+  renderHistorical (symbol) {
+    if(this.state.historical.includes(symbol)) {
+      return (
+        <HistoricalData symbol={symbol} />
+      )
+    }
+  }
+
+  render() {
     let timestamp = new Date();
 
     let renderRow = (quote, index) => {
       return (
         <tr key={index}>
-          <td>{quote.t}</td>
+          <td onClick={this.showHistorical.bind(this, quote.t)}>{quote.t}</td>
           <td>{quote.l}</td>
           <td className="remove"><a href="#" onClick={this.deleteSymbol.bind(this, quote.t)}>delete</a></td>
+          <td>{this.renderHistorical(quote.t)}</td>
         </tr>
       )
     };
